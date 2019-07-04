@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <com.google.android.exoplayer2.ui.DefaultTimeBar
+            android:id="@+id/media_player_player_view"
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+    >
+
+    </com.google.android.exoplayer2.ui.DefaultTimeBar>
+
+
+    <ImageButton
+            android:id="@+id/media_player_start_button"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/exo_icon_play"
+    />
+    <ImageButton
+            android:id="@+id/media_player_seek_button"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/exo_icon_fastforward"
+    />
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+        <TextView
+                android:id="@+id/media_player_current_value"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+        />
+        <TextView
+                android:id="@+id/media_player_total_value"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+        />
+
+
+    </LinearLayout>
+
+    <SeekBar
+            android:id="@+id/media_player_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+    />
+</LinearLayout>

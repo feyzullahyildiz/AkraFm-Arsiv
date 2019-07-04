@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:support="http://schemas.android.com/tools"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:layout_margin="10dp"
+>
+    <TextView
+            android:id="@+id/category_item_category_name_text_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            support:text="Deneme Text Yazısdır Deneme Text Yazısdır"
+            android:textSize="20sp"
+            android:padding="20dp"
+            android:layout_margin="10dp"
+    />
+</com.google.android.material.card.MaterialCardView>
