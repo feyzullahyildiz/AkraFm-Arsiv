@@ -14,3 +14,9 @@ class StreamModel(val guid: String, val name: String, val date: String, val url:
         return  sourceUrl() + "/playlist.m3u8"
     }
 }
+
+internal interface IM3u8StatusChangeListener {
+    fun onFinished()
+    fun onError(exc: Exception)
+    fun onChunkFileDownloaded(index: Int, size: Int)
+}

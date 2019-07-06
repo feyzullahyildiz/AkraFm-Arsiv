@@ -9,7 +9,7 @@
         android:layout_margin="10dp"
 >
     <TextView
-            android:id="@+id/category_item_category_name_text_view"
+            android:id="@+id/layout_item_text_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             support:text="Deneme Text Yazısdır Deneme Text Yazısdır"

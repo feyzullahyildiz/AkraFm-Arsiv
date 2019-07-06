@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 public class Utils {
 
+    public static final String TAG = "TAGTAG";
 
     public static String getSourceUrl(String url) {
         Pattern pattern = Pattern.compile("(https?:\\/\\/.*)\\/playlist.m3u8", Pattern.MULTILINE);

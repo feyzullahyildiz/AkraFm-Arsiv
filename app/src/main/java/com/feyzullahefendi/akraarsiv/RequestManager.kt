@@ -14,7 +14,7 @@ const val PROGRAM_STREAM_LIST_URL = "http://www.akradyo.net/jsonmediaarchive.ash
 val client: OkHttpClient = OkHttpClient()
 
 object RequestManager {
-    fun getCategory(activity: Activity, listener: categoryResponseInterface) {
+    fun getCategory(activity: Activity, listener: CategoryResponseInterface) {
         Thread {
             try {
                 val request = Request.Builder().url(CATEGORY_URL).build()
@@ -57,7 +57,7 @@ object RequestManager {
         }.start()
     }
 
-    fun getStreamListOfProgram(activity: Activity, programId: String, listener: streamResponseInterface) {
+    fun getStreamListOfProgram(activity: Activity, programId: String, listener: StreamResponseInterface) {
         Thread {
             try {
                 val url = String.format(PROGRAM_STREAM_LIST_URL, programId)
@@ -99,12 +99,12 @@ object RequestManager {
 //Response response = client.newCall(request).execute();
 
 
-interface categoryResponseInterface {
+interface CategoryResponseInterface {
     fun success(categories: ArrayList<CategoryModel>)
     fun error(error: Exception)
 }
 
-interface streamResponseInterface {
+interface StreamResponseInterface {
     fun success(streamModels: ArrayList<StreamModel>)
     fun error(error: Exception)
 }
