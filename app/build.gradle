@@ -11,13 +11,13 @@ android {
         applicationId "com.feyzullahefendi.akraarsiv"
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "0.0.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -41,7 +41,7 @@ dependencies {
     implementation("commons-io:commons-io:2.5")
 
     //FFmpeg
-    implementation 'nl.bravobit:android-ffmpeg:1.1.7'
+//    implementation 'nl.bravobit:android-ffmpeg:1.1.7'
 
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
 

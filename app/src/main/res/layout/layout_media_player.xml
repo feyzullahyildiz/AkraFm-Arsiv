@@ -38,23 +38,26 @@
             android:orientation="horizontal"
             android:gravity="end"
     >
-        <Button
+        <ImageButton
                 android:id="@+id/layout_media_player_play_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Start"
+                android:layout_width="@dimen/icon_button_size"
+                android:layout_height="@dimen/icon_button_size"
+                android:background="@drawable/ic_play_arrow_black_24dp"
+                android:layout_margin="5dp"
         />
-        <Button
+        <ImageButton
                 android:id="@+id/layout_media_player_backward_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Geri"
+                android:layout_width="@dimen/icon_button_size"
+                android:layout_height="@dimen/icon_button_size"
+                android:background="@drawable/ic_fast_rewind_black_24dp"
+                android:layout_margin="5dp"
         />
-        <Button
+        <ImageButton
                 android:id="@+id/layout_media_player_forward_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="İleri"
+                android:layout_width="@dimen/icon_button_size"
+                android:layout_height="@dimen/icon_button_size"
+                android:background="@drawable/ic_fast_forward_black_24dp"
+                android:layout_margin="5dp"
         />
         <androidx.legacy.widget.Space
                 android:layout_width="0dp" android:layout_height="wrap_content"
@@ -64,26 +67,26 @@
                 android:id="@+id/layout_media_player_current_time_text_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAlignment="textEnd"
                 support:text="00:03:28"
                 android:textColor="#000"
+                android:layout_gravity="center_vertical"
         />
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAlignment="textEnd"
                 support:text="/"
                 android:paddingLeft="4dp"
                 android:paddingRight="4dp"
                 android:textColor="#000"
+                android:layout_gravity="center_vertical"
         />
         <TextView
                 android:id="@+id/layout_media_player_total_time_text_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAlignment="textEnd"
                 support:text="00:17:41"
                 android:textColor="#000"
+                android:layout_gravity="center_vertical"
         />
     </LinearLayout>
 

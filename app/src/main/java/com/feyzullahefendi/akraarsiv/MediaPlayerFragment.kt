@@ -11,8 +11,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.SeekBar
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import io.reactivex.disposables.Disposable
 import org.reactivestreams.Subscription
@@ -26,12 +28,15 @@ class MediaPlayerFragment : Fragment() {
         const val INTENT_FILTER_NAME = "media-player-fragment"
         const val SEEKBAR_UPDATE = 1
         const val TIME_SET = 2
+        const val PLAY_STATE_CHANGE = 3
+        const val VALUE_PAUSED =  100
+        const val VALUE_STARTED =  101
     }
 
     var totalTime: Long = 0
-    lateinit var playButton: Button
-    lateinit var forwardButton: Button
-    lateinit var backwardButton: Button
+    lateinit var playButton: ImageButton
+    lateinit var forwardButton: ImageButton
+    lateinit var backwardButton: ImageButton
     lateinit var seekbar: SeekBar
     lateinit var titleTimeTextView: TextView
     lateinit var totalTimeTextView: TextView
@@ -58,6 +63,20 @@ class MediaPlayerFragment : Fragment() {
                     seekbar.max = (time / 1000).toInt()
                     totalTime = time
                 }
+                PLAY_STATE_CHANGE -> {
+                    when(intent.getIntExtra("payload", -1)) {
+                        VALUE_PAUSED -> {
+//                            val pauseIcon = ContextCompat.getDrawable(activity!!, R.drawable.ic_pause_black_24dp)
+                            playButton.setBackgroundResource(R.drawable.ic_play_arrow_black_24dp)
+                        }
+                        VALUE_STARTED -> {
+                            playButton.setBackgroundResource(R.drawable.ic_pause_black_24dp)
+//                            val playIcon = ContextCompat.getDrawable(activity!!, R.drawable.ic_play_arrow_black_24dp)
+                        }
+
+
+                    }
+                }
                 -1 -> {
                 }
             }
@@ -76,15 +95,19 @@ class MediaPlayerFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.layout_media_player, container, false)
 
-        playButton = view.findViewById<Button>(R.id.layout_media_player_play_button)
+        playButton = view.findViewById<ImageButton>(R.id.layout_media_player_play_button)
         playButton.setOnClickListener {
             changeStatus(PlayService.PLAY)
+            val playIcon = ContextCompat.getDrawable(activity!!, R.drawable.ic_play_arrow_black_24dp)
+            val pauseIcon = ContextCompat.getDrawable(activity!!, R.drawable.ic_pause_black_24dp)
+//            activity!!.Cont.getDrawable(R.drawable.ic_pause_black_24dp)
+//            playButton.setBackgroundResource()
         }
-        backwardButton = view.findViewById<Button>(R.id.layout_media_player_backward_button)
+        backwardButton = view.findViewById<ImageButton>(R.id.layout_media_player_backward_button)
         backwardButton.setOnClickListener {
             changeStatus(PlayService.BACKWARD)
         }
-        forwardButton = view.findViewById<Button>(R.id.layout_media_player_forward_button)
+        forwardButton = view.findViewById<ImageButton>(R.id.layout_media_player_forward_button)
         forwardButton.setOnClickListener {
             changeStatus(PlayService.FORWARD)
         }

@@ -12,8 +12,8 @@ import androidx.core.content.ContextCompat;
 //import com.github.hiteshsondhi88.libffmpeg.FFmpegExecuteResponseHandler;
 //import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
 //import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
-import nl.bravobit.ffmpeg.ExecuteBinaryResponseHandler;
-import nl.bravobit.ffmpeg.FFmpeg;
+//import nl.bravobit.ffmpeg.ExecuteBinaryResponseHandler;
+//import nl.bravobit.ffmpeg.FFmpeg;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -121,43 +121,43 @@ public class M3U8Manager {
             chunkFilePaths[i] = tempFolder + File.separator + i + ".acc";
         }
         String[] cmd = Utils.getFFmpegCommandArray(chunkFilePaths, mp3File.getPath());
-        FFmpeg ffmpeg = FFmpeg.getInstance(activity);
-        String TAG = "ffmpeg.execute";
-        if (ffmpeg.isSupported()) {
-            ffmpeg.execute(cmd, new ExecuteBinaryResponseHandler() {
-                @Override
-                public void onProgress(String message) {
-                    super.onProgress(message);
-                    Log.i(TAG, "onProgress: " + message);
-                }
-
-                @Override
-                public void onStart() {
-                    super.onStart();
-                    Log.i(TAG, "onStart");
-                }
-
-                @Override
-                public void onSuccess(String message) {
-                    super.onSuccess(message);
-                    Log.i(TAG, "onSuccess");
-                }
-
-                @Override
-                public void onFailure(String message) {
-                    super.onFailure(message);
-                    Log.i(TAG, "onFailure");
-                }
-
-                @Override
-                public void onFinish() {
-                    super.onFinish();
-                    Log.i(TAG, "onFinish");
-                }
-            });
-        } else {
-            throw new Exception("FFmpeg not supported");
-        }
+//        FFmpeg ffmpeg = FFmpeg.getInstance(activity);
+//        String TAG = "ffmpeg.execute";
+//        if (ffmpeg.isSupported()) {
+//            ffmpeg.execute(cmd, new ExecuteBinaryResponseHandler() {
+//                @Override
+//                public void onProgress(String message) {
+//                    super.onProgress(message);
+//                    Log.i(TAG, "onProgress: " + message);
+//                }
+//
+//                @Override
+//                public void onStart() {
+//                    super.onStart();
+//                    Log.i(TAG, "onStart");
+//                }
+//
+//                @Override
+//                public void onSuccess(String message) {
+//                    super.onSuccess(message);
+//                    Log.i(TAG, "onSuccess");
+//                }
+//
+//                @Override
+//                public void onFailure(String message) {
+//                    super.onFailure(message);
+//                    Log.i(TAG, "onFailure");
+//                }
+//
+//                @Override
+//                public void onFinish() {
+//                    super.onFinish();
+//                    Log.i(TAG, "onFinish");
+//                }
+//            });
+//        } else {
+//            throw new Exception("FFmpeg not supported");
+//        }
 
 //        deleteRecursive(tempFolder);
     }

@@ -25,6 +25,8 @@ import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
 import io.reactivex.disposables.Disposable
 import org.reactivestreams.Subscription
+import java.io.File
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -35,6 +37,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+//        val fileName = "LOG_${FileUtil.getDefaultSdf().format(Date())}"
+//        val newLogFile = File(this.cacheDir, fileName)
+//        FileUtil.setFile(newLogFile)
+//        Log.i(Utils.TAG, "NEW FILE NAME $fileName")
+//        Log.i(Utils.TAG, "path ${newLogFile.path}")
+
+//        FileUtil.appendStringToFile("NEW FILE NAME $fileName")
         val viewPager = findViewById<ViewPager>(R.id.view_pager)
         val tabLayout = findViewById<TabLayout>(R.id.tab_layout)
         tabLayout.tabGravity = TabLayout.GRAVITY_FILL
@@ -62,7 +71,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         streamModelDisposable = Utils.streamModelSubject.subscribe {
-//            val frameLayout = findViewById<FrameLayout>(R.id.activity_main_frame_layout)
+            //            val frameLayout = findViewById<FrameLayout>(R.id.activity_main_frame_layout)
             val fm = supportFragmentManager
             val ft = fm.beginTransaction()
             ft.replace(R.id.activity_main_frame_layout, MediaPlayerFragment.instance)
@@ -147,7 +156,17 @@ class MainActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
-            R.id.action_settings -> true
+            R.id.action_settings -> {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE
+                    ),
+                    1
+                )
+                return true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }

@@ -25,6 +25,7 @@ import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.exoplayer2.ExoPlayer
+import java.io.File
 import java.util.*
 
 
@@ -46,15 +47,16 @@ class PlayService : Service() {
         seekBarTimer = Timer()
         handler = Handler()
     }
+
     fun startTimer() {
-        if(seekBarTimer == null) {
+        if (seekBarTimer == null) {
             seekBarTimer = Timer()
         }
         seekBarTimer?.purge()
         seekBarTimer?.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
                 handler.post {
-                    val currentPosition = exoPlayer?.currentPosition
+                    val currentPosition = exoPlayer!!.currentPosition
                     val intent = Intent(MediaPlayerFragment.INTENT_FILTER_NAME)
                     intent.putExtra("state", MediaPlayerFragment.SEEKBAR_UPDATE)
                     intent.putExtra("payload", currentPosition)
@@ -64,11 +66,13 @@ class PlayService : Service() {
             }
         }, 0, 1000)
     }
+
     fun stopTimer() {
         seekBarTimer?.purge()
         seekBarTimer?.cancel()
         seekBarTimer = null
     }
+
     override fun onBind(intent: Intent?): IBinder? {
         Log.i(Utils.TAG, "PlayService onBind")
         return null
@@ -90,35 +94,39 @@ class PlayService : Service() {
             playerInit()
             when (intent?.getIntExtra("state", -1)) {
                 PLAY -> {
-                    exoPlayer?.playWhenReady = !exoPlayer?.playWhenReady!!
-                    if(exoPlayer?.playWhenReady!!) {
-                       startTimer()
-                    }else {
+                    exoPlayer!!.playWhenReady = !exoPlayer!!.playWhenReady
+                    if (exoPlayer!!.playWhenReady) {
+                        startTimer()
+                        sendStatus(MediaPlayerFragment.PLAY_STATE_CHANGE, MediaPlayerFragment.VALUE_STARTED)
+
+                    } else {
                         stopTimer()
+                        sendStatus(MediaPlayerFragment.PLAY_STATE_CHANGE, MediaPlayerFragment.VALUE_PAUSED)
                     }
+//                    FileUtil.appendStringToFile("PlayService playWhenReady: ${exoPlayer!!.playWhenReady}")
                 }
                 BACKWARD -> {
-                    val duration = exoPlayer?.currentPosition
-                    if (duration != null && duration > 5000) {
-                        exoPlayer?.seekTo(duration.minus(5000))
+                    val duration = exoPlayer!!.currentPosition
+                    if (duration > 5000) {
+                        exoPlayer!!.seekTo(duration.minus(5000))
                     } else {
-                        exoPlayer?.seekTo(0)
+                        exoPlayer!!.seekTo(0)
 
                     }
 
                 }
                 FORWARD -> {
-                    val duration = exoPlayer?.currentPosition
-                    val totalLen = exoPlayer?.duration
-                    if (duration != null && totalLen != null) {
-                        if (totalLen > duration.plus(5000)) {
-                            exoPlayer?.seekTo(duration.plus(5000))
-                        }
+                    val duration = exoPlayer!!.currentPosition
+                    val totalLen = exoPlayer!!.duration
+//                    if (duration != null && totalLen != null) {
+                    if (totalLen > duration.plus(5000)) {
+                        exoPlayer!!.seekTo(duration.plus(5000))
                     }
+//                    }
                 }
                 SEEK_TO -> {
                     val seekValue = intent?.getLongExtra("payload", -1)
-                    exoPlayer?.seekTo(seekValue)
+                    exoPlayer!!.seekTo(seekValue)
                 }
                 -1 -> {
                     val model = intent?.getSerializableExtra("model") as StreamModel
@@ -127,9 +135,10 @@ class PlayService : Service() {
                     val uri: Uri = Uri.parse(model.sourceUrl())
                     val mediaSource = SsMediaSource.Factory(dataSourceFactory).createMediaSource(uri)
 
-                    exoPlayer?.playWhenReady = true
+                    exoPlayer!!.playWhenReady = true
+                    sendStatus(MediaPlayerFragment.PLAY_STATE_CHANGE, MediaPlayerFragment.VALUE_STARTED)
                     startTimer()
-                    exoPlayer?.prepare(mediaSource, true, true)
+                    exoPlayer!!.prepare(mediaSource, true, true)
                 }
             }
 
@@ -142,13 +151,13 @@ class PlayService : Service() {
     private fun playerInit() {
         if (this.exoPlayer == null) {
             this@PlayService.exoPlayer = ExoPlayerFactory.newSimpleInstance(this@PlayService)
-            this@PlayService.exoPlayer?.addListener(object : Player.EventListener {
+            this@PlayService.exoPlayer!!.addListener(object : Player.EventListener {
                 override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
                     Log.i(Utils.TAG, "onPlayerStateChanged $playWhenReady  $playbackState")
                     if (playbackState == ExoPlayer.STATE_READY) {
-                        val realDurationMillis = this@PlayService.exoPlayer?.duration
+                        val realDurationMillis = this@PlayService.exoPlayer!!.duration
                         Log.i(Utils.TAG, "realDurationMillis $realDurationMillis")
-                        sendStatus(MediaPlayerFragment.TIME_SET, realDurationMillis!!)
+                        sendStatus(MediaPlayerFragment.TIME_SET, realDurationMillis)
                     }
                 }
             })
@@ -156,6 +165,13 @@ class PlayService : Service() {
     }
 
     fun sendStatus(statusCode: Int, payload: Long) {
+        val intent = Intent(MediaPlayerFragment.INTENT_FILTER_NAME).apply {
+            putExtra("state", statusCode)
+            putExtra("payload", payload)
+        }
+        LocalBroadcastManager.getInstance(this@PlayService).sendBroadcast(intent)
+    }
+    fun sendStatus(statusCode: Int, payload: Int) {
         val intent = Intent(MediaPlayerFragment.INTENT_FILTER_NAME).apply {
             putExtra("state", statusCode)
             putExtra("payload", payload)
