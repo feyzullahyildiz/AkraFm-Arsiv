@@ -1,7 +1,6 @@
 package com.feyzullahefendi.akraarsiv
 
 import com.feyzullahefendi.akraarsiv.Utils;
-import nl.bravobit.ffmpeg.FFmpeg
 import org.junit.Test
 
 import org.junit.Assert.*

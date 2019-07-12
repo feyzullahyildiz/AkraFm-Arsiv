@@ -1,5 +1,6 @@
 package com.feyzullahefendi.akraarsiv
 
+import android.annotation.SuppressLint
 import android.app.*
 import android.content.BroadcastReceiver
 import android.content.Intent
@@ -25,6 +26,7 @@ import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.exoplayer2.ExoPlayer
+import io.reactivex.disposables.Disposable
 import java.io.File
 import java.util.*
 
@@ -36,10 +38,13 @@ class PlayService : Service() {
         const val FORWARD = 2
         const val BACKWARD = 3
         const val SEEK_TO = 4
-    }
+        private var exoPlayer: SimpleExoPlayer? = null
 
-    var seekBarTimer: Timer? = null
-    lateinit var handler: Handler
+        var seekBarTimer: Timer? = null
+        lateinit var handler: Handler
+//        lateinit var disposable: Disposable
+
+    }
     override fun onCreate() {
         super.onCreate()
         Log.i(Utils.TAG, "PlayService onCreate")
@@ -146,16 +151,16 @@ class PlayService : Service() {
         }
     }
 
-    private var exoPlayer: SimpleExoPlayer? = null
+
 
     private fun playerInit() {
-        if (this.exoPlayer == null) {
-            this@PlayService.exoPlayer = ExoPlayerFactory.newSimpleInstance(this@PlayService)
-            this@PlayService.exoPlayer!!.addListener(object : Player.EventListener {
+        if (exoPlayer == null) {
+            exoPlayer = ExoPlayerFactory.newSimpleInstance(this@PlayService)
+            exoPlayer!!.addListener(object : Player.EventListener {
                 override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
                     Log.i(Utils.TAG, "onPlayerStateChanged $playWhenReady  $playbackState")
                     if (playbackState == ExoPlayer.STATE_READY) {
-                        val realDurationMillis = this@PlayService.exoPlayer!!.duration
+                        val realDurationMillis = exoPlayer!!.duration
                         Log.i(Utils.TAG, "realDurationMillis $realDurationMillis")
                         sendStatus(MediaPlayerFragment.TIME_SET, realDurationMillis)
                     }

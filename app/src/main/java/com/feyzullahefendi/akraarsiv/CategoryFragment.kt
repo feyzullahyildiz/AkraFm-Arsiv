@@ -17,13 +17,9 @@ class CategoryFragment : Fragment() {
         val instance = CategoryFragment()
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        Log.i(Utils.TAG, "CategoryFragment onCreate")
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         Log.i(Utils.TAG, "CategoryFragment onCreateView")
+        (activity as MainActivity).startService()
         val view = inflater.inflate(R.layout.layout_recycler_view, container, false)
         val recyclerView = view.findViewById<RecyclerView>(R.id.layout_recycler_view_item)
         val swipeRefreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.layout_swipe_refresh)

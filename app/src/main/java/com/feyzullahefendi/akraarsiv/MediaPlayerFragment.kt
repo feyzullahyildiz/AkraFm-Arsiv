@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment
 import io.reactivex.disposables.Disposable
 import org.reactivestreams.Subscription
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.google.android.exoplayer2.util.Util
 
 
 class MediaPlayerFragment : Fragment() {
@@ -93,8 +94,8 @@ class MediaPlayerFragment : Fragment() {
 
     lateinit var subscription: Disposable
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        (activity as MainActivity).startService()
         val view = inflater.inflate(R.layout.layout_media_player, container, false)
-
         playButton = view.findViewById<ImageButton>(R.id.layout_media_player_play_button)
         playButton.setOnClickListener {
             changeStatus(PlayService.PLAY)
@@ -117,6 +118,7 @@ class MediaPlayerFragment : Fragment() {
         titleTimeTextView = view.findViewById(R.id.layout_media_player_title_text_view)
 
         subscription = Utils.streamModelSubject.subscribe {
+            invokeService()
             Log.i(Utils.TAG, "MediaPlayerFragment send")
             val intent = Intent(PlayService.INTENT_FILTER_NAME)
             intent.putExtra("model", it)
@@ -138,12 +140,14 @@ class MediaPlayerFragment : Fragment() {
     }
 
     fun changeStatus(state: Int, payload: String) {
+        invokeService()
         val intent = Intent(PlayService.INTENT_FILTER_NAME)
         intent.putExtra("state", state)
         intent.putExtra("payload", payload)
         LocalBroadcastManager.getInstance(activity!!).sendBroadcast(intent)
     }
     fun changeStatus(state: Int, payload: Long) {
+        invokeService()
         val intent = Intent(PlayService.INTENT_FILTER_NAME)
         intent.putExtra("state", state)
         intent.putExtra("payload", payload)
@@ -151,11 +155,16 @@ class MediaPlayerFragment : Fragment() {
     }
 
     fun changeStatus(state: Int) {
+        invokeService()
         val intent = Intent(PlayService.INTENT_FILTER_NAME)
         intent.putExtra("state", state)
         LocalBroadcastManager.getInstance(activity!!).sendBroadcast(intent)
     }
-
+    fun invokeService() {
+        Log.i(Utils.TAG, "invoke service")
+        val serviceIntent = Intent(activity!!, PlayService::class.java)
+        activity!!.startService(serviceIntent)
+    }
     override fun onDestroy() {
         super.onDestroy()
         LocalBroadcastManager.getInstance(activity!!).unregisterReceiver(broadcastReceiver)

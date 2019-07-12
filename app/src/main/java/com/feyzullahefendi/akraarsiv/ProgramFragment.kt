@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import io.reactivex.disposables.Disposable
 
 class ProgramFragment : Fragment() {
@@ -20,10 +21,15 @@ class ProgramFragment : Fragment() {
     lateinit var subscription: Disposable
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        (activity as MainActivity).startService()
         Log.i(Utils.TAG, "ProgramFragment onCreateView")
         val view = inflater.inflate(R.layout.layout_recycler_view, container, false)
         val recyclerView = view.findViewById<RecyclerView>(R.id.layout_recycler_view_item)
         recyclerView.layoutManager = LinearLayoutManager(activity)
+        val swipeRefreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.layout_swipe_refresh)
+        swipeRefreshLayout.setOnRefreshListener {
+            swipeRefreshLayout.isRefreshing = false
+        }
         if (!::subscription.isInitialized || subscription.isDisposed) {
             subscription = Utils.categoryModelSubject.subscribe { categoryModel: CategoryModel ->
                 Log.i(Utils.TAG, "ProgramFragment ${categoryModel.catName}")
@@ -57,7 +63,6 @@ class ProgramFragment : Fragment() {
         override fun onBindViewHolder(holder: ChildProgramViewHolder, position: Int) {
             holder.bindData(childPrograms[position])
         }
-
 
     }
 

@@ -15,9 +15,12 @@ import android.os.Parcelable
 import android.util.Log
 import android.view.*
 import android.widget.FrameLayout
+import android.widget.RemoteViews
 import android.widget.TableLayout
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
@@ -37,13 +40,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-//        val fileName = "LOG_${FileUtil.getDefaultSdf().format(Date())}"
-//        val newLogFile = File(this.cacheDir, fileName)
-//        FileUtil.setFile(newLogFile)
-//        Log.i(Utils.TAG, "NEW FILE NAME $fileName")
-//        Log.i(Utils.TAG, "path ${newLogFile.path}")
 
-//        FileUtil.appendStringToFile("NEW FILE NAME $fileName")
+
         val viewPager = findViewById<ViewPager>(R.id.view_pager)
         val tabLayout = findViewById<TabLayout>(R.id.tab_layout)
         tabLayout.tabGravity = TabLayout.GRAVITY_FILL
@@ -79,63 +77,20 @@ class MainActivity : AppCompatActivity() {
             ft.commit()
         }
 
-//        fab.setOnClickListener { view ->
+//        val notificationLayout = RemoteViews(packageName, R.layout.notification)
+//        val notificationLayoutExpanded = RemoteViews(packageName, R.layout.notification)
 //
-//            val writePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-//            val readPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-//            if (writePermission == PackageManager.PERMISSION_GRANTED && readPermission == PackageManager.PERMISSION_GRANTED) {
-//                val url =
-//                    "http://cdn.akradyo.net/vods3cf/_definst_/mp4:amazons3/akra/programlar/eski/193/basmakale2/2008.09.13_13_Kadinlarin+onemli+gorevleri_Daha+cok+calismali+ve+ufkumuzu+genisletmeliyiz.mp4/playlist.m3u8"
-//                val manager = M3U8Manager(this)
-//                manager.download(url,
-//                    "7159e243-7f3e-4772-9cce-355a570480d3",
-//                    object : IM3u8StatusChangeListener {
-//                        override fun onFinished() {
-//                            var i = 0
-//                        }
-//
-//                        override fun onError(e: Exception) {
-//                            var i = 0
-//                            var message = e.message
-//                            if (message == null) {
-//                                message = "Beklenmedik hata oluştu"
-//                            }
-//                            Snackbar.make(view, message, Snackbar.LENGTH_LONG)
-//                        }
-//
-//                        override fun onChunkFileDownloaded(index: Int, size: Int) {
-//                            Log.i("onChunkFileDownloaded", "index: " + index + " / " + size)
-//                        }
-//                    })
-//            } else {
-//                Snackbar.make(view, "İzin verilmemiş durumda", Snackbar.LENGTH_LONG)
-//                ActivityCompat.requestPermissions(
-//                    this,
-//                    arrayOf(
-//                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-//                        Manifest.permission.READ_EXTERNAL_STORAGE
-//                    ),
-//                    1
-//                )
-//            }
-//
-//        }
-//        val recyclerView = findViewById<RecyclerView>(R.id.category_list_recycler_view)
-//        recyclerView.layoutManager = LinearLayoutManager(this)
-//
-//        RequestManager.getCategory(this, object : CategoryResponseInterface {
-//            override fun success(categories: ArrayList<CategoryModel>) {
-//                val adapter = CategoryRecyclerViewAdapter(categories)
-//                recyclerView.adapter = adapter
-//                recyclerView.adapter?.notifyDataSetChanged()
-//            }
-//
-//            override fun error(error: Exception) {
-//            }
-//        })
+//        val notificationCompat = NotificationManagerCompat.from(applicationContext)
+//        Log.i(Utils.TAG, "is notifcaitons enabled ${notificationCompat.areNotificationsEnabled()}")
+//        val customNotification = NotificationCompat.Builder(this, "channel-id")
+//            .setSmallIcon(R.drawable.ic_arsiv_rounded)
+//            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+//            .setCustomContentView(notificationLayout)
+//            .setCustomBigContentView(notificationLayoutExpanded)
+//            .build()
+//        notificationCompat.notify(101, customNotification)
 
-        val serviceIntent = Intent(this, PlayService::class.java)
-        startService(serviceIntent)
+        startService()
     }
 
     override fun onDestroy() {
@@ -146,31 +101,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            R.id.action_settings -> {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.READ_EXTERNAL_STORAGE
-                    ),
-                    1
-                )
-                return true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
 
+    fun startService() {
+        val serviceIntent = Intent(this, PlayService::class.java)
+        this.startService(serviceIntent)
+    }
 
     inner class TabAdapter(val fm: FragmentManager, private val pageCount: Int) : FragmentStatePagerAdapter(fm) {
         override fun getCount(): Int {
