@@ -76,7 +76,7 @@ object RequestManager {
                         streamModelList.add(StreamModel(guid, name, date, url))
 
                     }
-                    activity.runOnUiThread{
+                    activity.runOnUiThread {
                         listener.success(streamModelList)
                     }
                 } else {
@@ -94,10 +94,6 @@ object RequestManager {
         }.start()
     }
 }
-//OkHttpClient client = new OkHttpClient();
-//Request request = new Request.Builder().url(url).build();
-//Response response = client.newCall(request).execute();
-
 
 interface CategoryResponseInterface {
     fun success(categories: ArrayList<CategoryModel>)

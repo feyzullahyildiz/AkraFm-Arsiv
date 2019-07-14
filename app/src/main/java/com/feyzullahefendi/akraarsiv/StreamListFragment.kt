@@ -1,6 +1,5 @@
 package com.feyzullahefendi.akraarsiv
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +11,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import io.reactivex.disposables.Disposable
-import org.reactivestreams.Subscription
 import java.lang.Exception
 
 class StreamListFragment : Fragment() {
@@ -20,6 +18,7 @@ class StreamListFragment : Fragment() {
         val instance = StreamListFragment()
     }
 
+    lateinit var swipeRefreshLayout: SwipeRefreshLayout
     lateinit var subscription: Disposable
     lateinit var recyclerView: RecyclerView
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -27,11 +26,10 @@ class StreamListFragment : Fragment() {
         val view = inflater.inflate(R.layout.layout_recycler_view, container, false)
         recyclerView = view.findViewById<RecyclerView>(R.id.layout_recycler_view_item)
         recyclerView.layoutManager = LinearLayoutManager(activity)
-        val swipeRefreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.layout_swipe_refresh)
+        swipeRefreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.layout_swipe_refresh)
         swipeRefreshLayout.setOnRefreshListener {
             val it = Utils.childProgramSubject.value
             reloadData(it)
-            swipeRefreshLayout.isRefreshing = false
         }
         recyclerView.adapter = null
         if (!::subscription.isInitialized || subscription.isDisposed) {
@@ -45,14 +43,16 @@ class StreamListFragment : Fragment() {
 
     private fun reloadData(childProgram: ChildProgram?) {
         recyclerView.adapter = null
+        swipeRefreshLayout.isRefreshing = true
         RequestManager.getStreamListOfProgram(activity!!, childProgram!!.id, object : StreamResponseInterface {
             override fun success(streamModels: ArrayList<StreamModel>) {
                 val adapter = StreamModelRecyclerViewAdapter(streamModels)
                 recyclerView.adapter = adapter
+                swipeRefreshLayout.isRefreshing = false
             }
 
             override fun error(error: Exception) {
-
+                swipeRefreshLayout.isRefreshing = false
             }
         })
     }

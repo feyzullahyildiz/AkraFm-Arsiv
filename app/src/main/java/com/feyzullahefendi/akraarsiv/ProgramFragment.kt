@@ -77,8 +77,6 @@ class ProgramFragment : Fragment() {
 
         override fun onClick(p0: View?) {
             Utils.childProgramSubject.onNext(this.model)
-//            val intent = Intent(this@ChildProgramActivity, StreamListActivity::class.java)
-//            this@ChildProgramActivity.startActivity(intent)
         }
 
         fun bindData(model: ChildProgram) {

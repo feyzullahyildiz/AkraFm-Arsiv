@@ -1,33 +1,22 @@
 package com.feyzullahefendi.akraarsiv
 
-import android.annotation.SuppressLint
 import android.app.*
 import android.content.BroadcastReceiver
 import android.content.Intent
 import android.content.Context
 import android.content.IntentFilter
 import android.net.Uri
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import com.google.android.exoplayer2.ExoPlayerFactory
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import com.google.android.exoplayer2.Player
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Handler
 import android.os.IBinder
 import android.util.Log
-import androidx.annotation.Nullable
-import com.google.android.exoplayer2.ui.PlayerNotificationManager
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.exoplayer2.ExoPlayer
-import io.reactivex.disposables.Disposable
-import java.io.File
 import java.util.*
 
 
@@ -38,13 +27,14 @@ class PlayService : Service() {
         const val FORWARD = 2
         const val BACKWARD = 3
         const val SEEK_TO = 4
+        const val NOTIFY = 5
         private var exoPlayer: SimpleExoPlayer? = null
 
         var seekBarTimer: Timer? = null
         lateinit var handler: Handler
-//        lateinit var disposable: Disposable
-
     }
+
+    var model: StreamModel? = null
     override fun onCreate() {
         super.onCreate()
         Log.i(Utils.TAG, "PlayService onCreate")
@@ -62,10 +52,7 @@ class PlayService : Service() {
             override fun run() {
                 handler.post {
                     val currentPosition = exoPlayer!!.currentPosition
-                    val intent = Intent(MediaPlayerFragment.INTENT_FILTER_NAME)
-                    intent.putExtra("state", MediaPlayerFragment.SEEKBAR_UPDATE)
-                    intent.putExtra("payload", currentPosition)
-                    LocalBroadcastManager.getInstance(this@PlayService).sendBroadcast(intent)
+                    sendStatus(MediaPlayerFragment.SEEKBAR_UPDATE, currentPosition)
                 }
 
             }
@@ -108,7 +95,6 @@ class PlayService : Service() {
                         stopTimer()
                         sendStatus(MediaPlayerFragment.PLAY_STATE_CHANGE, MediaPlayerFragment.VALUE_PAUSED)
                     }
-//                    FileUtil.appendStringToFile("PlayService playWhenReady: ${exoPlayer!!.playWhenReady}")
                 }
                 BACKWARD -> {
                     val duration = exoPlayer!!.currentPosition
@@ -123,27 +109,42 @@ class PlayService : Service() {
                 FORWARD -> {
                     val duration = exoPlayer!!.currentPosition
                     val totalLen = exoPlayer!!.duration
-//                    if (duration != null && totalLen != null) {
                     if (totalLen > duration.plus(5000)) {
                         exoPlayer!!.seekTo(duration.plus(5000))
                     }
-//                    }
                 }
                 SEEK_TO -> {
-                    val seekValue = intent?.getLongExtra("payload", -1)
+                    val seekValue = intent.getLongExtra("payload", -1)
                     exoPlayer!!.seekTo(seekValue)
                 }
+                NOTIFY -> {
+                    Log.e(Utils.TAG, "NOTIFY ME AGAIN DUDE")
+                    val realDurationMillis = exoPlayer!!.duration
+                    sendStatus(MediaPlayerFragment.TIME_SET, realDurationMillis)
+                    if (exoPlayer!!.playWhenReady) {
+                        sendStatus(MediaPlayerFragment.PLAY_STATE_CHANGE, MediaPlayerFragment.VALUE_STARTED)
+                    } else {
+                        sendStatus(MediaPlayerFragment.PLAY_STATE_CHANGE, MediaPlayerFragment.VALUE_PAUSED)
+                    }
+                    val currentPosition = exoPlayer!!.currentPosition
+                    sendStatus(MediaPlayerFragment.SEEKBAR_UPDATE, currentPosition)
+
+                }
                 -1 -> {
-                    val model = intent?.getSerializableExtra("model") as StreamModel
+                    val streamModel = intent.getSerializableExtra("model") as StreamModel
+                    if(model != null && streamModel.guid == model?.guid) {
+                        return
+                    }
                     val dataSourceFactory =
                         DefaultHttpDataSourceFactory(Util.getUserAgent(this@PlayService, "akra-arsiv"))
-                    val uri: Uri = Uri.parse(model.sourceUrl())
+                    val uri: Uri = Uri.parse(streamModel.sourceUrl())
                     val mediaSource = SsMediaSource.Factory(dataSourceFactory).createMediaSource(uri)
 
                     exoPlayer!!.playWhenReady = true
                     sendStatus(MediaPlayerFragment.PLAY_STATE_CHANGE, MediaPlayerFragment.VALUE_STARTED)
                     startTimer()
                     exoPlayer!!.prepare(mediaSource, true, true)
+                    model = streamModel
                 }
             }
 
@@ -161,7 +162,6 @@ class PlayService : Service() {
                     Log.i(Utils.TAG, "onPlayerStateChanged $playWhenReady  $playbackState")
                     if (playbackState == ExoPlayer.STATE_READY) {
                         val realDurationMillis = exoPlayer!!.duration
-                        Log.i(Utils.TAG, "realDurationMillis $realDurationMillis")
                         sendStatus(MediaPlayerFragment.TIME_SET, realDurationMillis)
                     }
                 }

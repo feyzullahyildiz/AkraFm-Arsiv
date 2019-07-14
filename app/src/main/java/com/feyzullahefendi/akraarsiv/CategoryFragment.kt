@@ -17,41 +17,38 @@ class CategoryFragment : Fragment() {
         val instance = CategoryFragment()
     }
 
+    lateinit var recyclerView: RecyclerView
+    lateinit var swipeRefreshLayout : SwipeRefreshLayout
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         Log.i(Utils.TAG, "CategoryFragment onCreateView")
         (activity as MainActivity).startService()
         val view = inflater.inflate(R.layout.layout_recycler_view, container, false)
-        val recyclerView = view.findViewById<RecyclerView>(R.id.layout_recycler_view_item)
-        val swipeRefreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.layout_swipe_refresh)
-
+        recyclerView = view.findViewById<RecyclerView>(R.id.layout_recycler_view_item)
+        swipeRefreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.layout_swipe_refresh)
         recyclerView.layoutManager = LinearLayoutManager(activity)
+        swipeRefreshLayout.setOnRefreshListener {
+            reloadCategoryData()
+        }
+        reloadCategoryData()
+        return view
+    }
+
+    fun reloadCategoryData() {
+        swipeRefreshLayout.isRefreshing = true
+        recyclerView.adapter = null
         RequestManager.getCategory(activity!!, object : CategoryResponseInterface {
             override fun success(categories: ArrayList<CategoryModel>) {
                 val adapter = CategoryRecyclerViewAdapter(categories)
                 recyclerView.adapter = adapter
                 recyclerView.adapter?.notifyDataSetChanged()
+                swipeRefreshLayout.isRefreshing = false
             }
 
             override fun error(error: Exception) {
+                swipeRefreshLayout.isRefreshing = false
             }
         })
-        swipeRefreshLayout.setOnRefreshListener {
-            RequestManager.getCategory(activity!!, object : CategoryResponseInterface {
-                override fun success(categories: ArrayList<CategoryModel>) {
-                    val adapter = CategoryRecyclerViewAdapter(categories)
-                    recyclerView.adapter = adapter
-                    recyclerView.adapter?.notifyDataSetChanged()
-                    swipeRefreshLayout.isRefreshing = false
-                }
-
-                override fun error(error: Exception) {
-                    swipeRefreshLayout.isRefreshing = false
-                }
-            })
-        }
-        return view
     }
-
     inner class CategoryRecyclerViewAdapter(val categories: ArrayList<CategoryModel>) :
         RecyclerView.Adapter<CategoryRecyclerViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryRecyclerViewHolder {

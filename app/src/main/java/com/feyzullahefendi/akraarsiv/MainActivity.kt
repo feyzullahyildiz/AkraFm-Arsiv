@@ -1,35 +1,16 @@
 package com.feyzullahefendi.akraarsiv
 
-import android.Manifest
 import android.content.Intent
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat
 
 import kotlinx.android.synthetic.main.activity_main.*
-import java.lang.Exception
-import android.content.pm.PackageManager
-import android.os.Parcel
-import android.os.Parcelable
-import android.util.Log
-import android.view.*
-import android.widget.FrameLayout
-import android.widget.RemoteViews
-import android.widget.TableLayout
-import android.widget.TextView
-import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
 import io.reactivex.disposables.Disposable
-import org.reactivestreams.Subscription
-import java.io.File
-import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -68,27 +49,15 @@ class MainActivity : AppCompatActivity() {
                 viewPager.currentItem = 2
             }
         }
+
         streamModelDisposable = Utils.streamModelSubject.subscribe {
-            //            val frameLayout = findViewById<FrameLayout>(R.id.activity_main_frame_layout)
             val fm = supportFragmentManager
             val ft = fm.beginTransaction()
             ft.replace(R.id.activity_main_frame_layout, MediaPlayerFragment.instance)
 
-            ft.commit()
+            ft.commitAllowingStateLoss()
         }
 
-//        val notificationLayout = RemoteViews(packageName, R.layout.notification)
-//        val notificationLayoutExpanded = RemoteViews(packageName, R.layout.notification)
-//
-//        val notificationCompat = NotificationManagerCompat.from(applicationContext)
-//        Log.i(Utils.TAG, "is notifcaitons enabled ${notificationCompat.areNotificationsEnabled()}")
-//        val customNotification = NotificationCompat.Builder(this, "channel-id")
-//            .setSmallIcon(R.drawable.ic_arsiv_rounded)
-//            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
-//            .setCustomContentView(notificationLayout)
-//            .setCustomBigContentView(notificationLayoutExpanded)
-//            .build()
-//        notificationCompat.notify(101, customNotification)
 
         startService()
     }
@@ -98,10 +67,6 @@ class MainActivity : AppCompatActivity() {
         if (::categoryDisposable.isInitialized) {
             categoryDisposable.dispose()
         }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        return true
     }
 
 
