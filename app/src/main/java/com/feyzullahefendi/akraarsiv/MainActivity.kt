@@ -11,12 +11,20 @@ import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
 import io.reactivex.disposables.Disposable
+import android.content.pm.PackageManager
+import android.Manifest.permission
+import android.Manifest.permission.FOREGROUND_SERVICE
+import android.Manifest.permission.WRITE_CALENDAR
+import android.os.Build
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
 
 class MainActivity : AppCompatActivity() {
     lateinit var categoryDisposable: Disposable
     lateinit var childProgramDisposable: Disposable
     lateinit var streamModelDisposable: Disposable
+    val REQUEST_CODE_FOREGROUND_SERVICE = 5
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -58,10 +66,28 @@ class MainActivity : AppCompatActivity() {
             ft.commitAllowingStateLoss()
         }
 
-
-        startService()
+        askForeGroundService()
+    }
+    private fun askForeGroundService() {
+        if(Build.VERSION.SDK_INT >= 28) {
+            if (ContextCompat.checkSelfPermission(this, FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED) {
+                startService()
+            } else {
+                ActivityCompat.requestPermissions(this,arrayOf(FOREGROUND_SERVICE), REQUEST_CODE_FOREGROUND_SERVICE)
+            }
+        } else {
+            startService()
+        }
     }
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if(requestCode == REQUEST_CODE_FOREGROUND_SERVICE) {
+            if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                askForeGroundService()
+            }
+        }
+    }
     override fun onDestroy() {
         super.onDestroy()
         if (::categoryDisposable.isInitialized) {
