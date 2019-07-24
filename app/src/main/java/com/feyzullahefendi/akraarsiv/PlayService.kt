@@ -33,10 +33,10 @@ class PlayService : Service() {
         const val BACKWARD = 3
         const val SEEK_TO = 4
         const val NOTIFY = 5
+        const val OPEN_APP= 6
         const val NOTIFICATION_ID = 27
         const val CHANNEL_ID = "FEYZ_CHANNEL_27"
         private var exoPlayer: SimpleExoPlayer? = null
-        private var notificationBuilder: NotificationCompat.Builder? = null
 
         var seekBarTimer: Timer? = null
         lateinit var handler: Handler
@@ -49,13 +49,13 @@ class PlayService : Service() {
     }
 
     var model: StreamModel? = null
+    var notificationBuilder: NotificationCompat.Builder? = null
     override fun onCreate() {
         super.onCreate()
         Log.i(Utils.TAG, "PlayService onCreate")
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, IntentFilter(INTENT_FILTER_NAME))
         seekBarTimer = Timer()
         handler = Handler()
-        notificationInit()
 
     }
 
@@ -88,8 +88,6 @@ class PlayService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.i(Utils.TAG, "PlayService onStartCommand")
-//        return super.onStartCommand(intent, flags, startId)
-//        startForegroundService()
         return START_STICKY
     }
 
@@ -100,19 +98,21 @@ class PlayService : Service() {
 
     private val messageReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            Log.i(Utils.TAG, "onReceive messageReceiver")
             playerInit()
-            notificationInit()
-            when (val intentValue = intent?.getIntExtra("state", -1)) {
+            val intentValue = intent?.getIntExtra("state", -1)
+            Log.i(Utils.TAG, "PlayService messageReceiver intentValue $intentValue")
+            when (intentValue) {
                 PLAY -> {
                     exoPlayer!!.playWhenReady = !exoPlayer!!.playWhenReady
                     if (exoPlayer!!.playWhenReady) {
                         startTimer()
                         sendStatus(MediaPlayerFragment.PLAY_STATE_CHANGE, MediaPlayerFragment.VALUE_STARTED)
+                        updateNotification(model)
 
                     } else {
                         stopTimer()
                         sendStatus(MediaPlayerFragment.PLAY_STATE_CHANGE, MediaPlayerFragment.VALUE_PAUSED)
+                        stopForeground(true)
                     }
                 }
                 BACKWARD -> {
@@ -121,7 +121,6 @@ class PlayService : Service() {
                         exoPlayer!!.seekTo(duration.minus(5000))
                     } else {
                         exoPlayer!!.seekTo(0)
-
                     }
 
                 }
@@ -191,39 +190,32 @@ class PlayService : Service() {
         }
     }
 
-    private fun notificationInit() {
-        if (notificationBuilder == null) {
-
-
-            notificationBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
-
-            updateNotification(null)
-        }
-    }
-
     fun updateNotification(streamModel: StreamModel?) {
-//        val intent = Intent(PlayService.INTENT_FILTER_NAME)
-//        intent.putExtra("state", PLAY)
-//
-//        val acceptNextPendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0)
-//
-//        val acceptAction = NotificationCompat.Action.Builder(
-//            R.drawable.ic_play_arrow_black_24dp,
-//            "Durdur",
-//            acceptNextPendingIntent
-//        ).build()
-//
         val notificationService = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val openAppIntent = Intent(NotificationBroadCastReceiver.DEFAULT).apply {
+            putExtra("state", OPEN_APP)
+        }
+        val openAppPendingIntent = PendingIntent.getBroadcast(this, 10, openAppIntent, 0)
 
+        notificationBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
         notificationBuilder!!
             .setAutoCancel(false)
             .setOnlyAlertOnce(true)
             .setSmallIcon(R.drawable.exo_notification_small_icon)
             .setContentTitle(streamModel?.name)
             .setContentText(streamModel?.date)
-//            .addAction(acceptAction)
-//            .addInvisibleAction(acceptAction)
+            .setContentIntent(openAppPendingIntent)
 
+        val stopIntent = Intent(NotificationBroadCastReceiver.DEFAULT).apply {
+            putExtra("state", PlayService.PLAY)
+        }
+        val stopPendingIntent = PendingIntent.getBroadcast(this, 11, stopIntent, 0)
+        val stopAction = NotificationCompat.Action.Builder(
+            R.drawable.ic_play_arrow_black_24dp,
+            "Durdur",
+            stopPendingIntent
+        ).build()
+        notificationBuilder!!.addAction(stopAction)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             /* Create or update. */
