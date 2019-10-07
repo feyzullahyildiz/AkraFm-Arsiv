@@ -32,7 +32,8 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <receiver android:name=".NotificationBroadCastReceiver">
+        <receiver
+                android:name=".NotificationBroadCastReceiver">
             <intent-filter>
                 <action android:name="com.feyzullahefendi.akraarsiv.DEFAULT" />
             </intent-filter>

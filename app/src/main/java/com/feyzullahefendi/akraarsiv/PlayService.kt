@@ -222,7 +222,7 @@ class PlayService : Service() {
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 "Playback Notification",
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_HIGH
             )
             notificationService.createNotificationChannel(channel)
             notificationBuilder!!.setChannelId(CHANNEL_ID)

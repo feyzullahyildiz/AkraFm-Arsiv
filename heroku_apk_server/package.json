@@ -1,0 +1,12 @@
+{
+  "name": "heroku_apk_server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.3"
+  }
+}

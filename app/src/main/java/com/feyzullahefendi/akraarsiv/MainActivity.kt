@@ -30,36 +30,37 @@ class MainActivity : AppCompatActivity() {
     lateinit var childProgramDisposable: Disposable
     lateinit var streamModelDisposable: Disposable
     val REQUEST_CODE_FOREGROUND_SERVICE = 5
-
+    var adapter: TabAdapter? = null
+    var viewPager: ViewPager? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        val viewPager = findViewById<ViewPager>(R.id.view_pager)
+        this.viewPager = findViewById<ViewPager>(R.id.view_pager)
         val tabLayout = findViewById<TabLayout>(R.id.tab_layout)
         tabLayout.tabGravity = TabLayout.GRAVITY_FILL
         tabLayout.addTab(tabLayout.newTab().setText("Kategoriler"))
         tabLayout.addTab(tabLayout.newTab().setText("Programlar"))
         tabLayout.addTab(tabLayout.newTab().setText("Bölümler"))
-        val adapter = TabAdapter(supportFragmentManager, 3)
-        viewPager.adapter = adapter
-        viewPager.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))
+        this.adapter = TabAdapter(supportFragmentManager, 3)
+        this.viewPager!!.adapter = this.adapter
+        this.viewPager!!.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabReselected(p0: TabLayout.Tab?) {}
             override fun onTabUnselected(p0: TabLayout.Tab?) {}
             override fun onTabSelected(tab: TabLayout.Tab?) {
-                viewPager.currentItem = tab!!.position
+                viewPager!!.currentItem = tab!!.position
             }
         })
         if (!::categoryDisposable.isInitialized || categoryDisposable.isDisposed) {
             categoryDisposable = Utils.categoryModelSubject.subscribe {
-                viewPager.currentItem = 1
+                viewPager!!.currentItem = 1
             }
         }
         if (!::childProgramDisposable.isInitialized || childProgramDisposable.isDisposed) {
             childProgramDisposable = Utils.childProgramSubject.subscribe {
-                viewPager.currentItem = 2
+                viewPager!!.currentItem = 2
             }
         }
 
@@ -73,6 +74,7 @@ class MainActivity : AppCompatActivity() {
 
         askForeGroundService()
     }
+
     private fun askForeGroundService() {
         if (Build.VERSION.SDK_INT >= 28) {
             if (ContextCompat.checkSelfPermission(this, FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED) {
@@ -122,6 +124,15 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+    }
+
+    override fun onBackPressed() {
+        val position = this.viewPager!!.currentItem
+        if (position == 0) {
+            super.onBackPressed()
+        } else {
+            viewPager!!.currentItem = position - 1
+        }
     }
 
 }
