@@ -1,1 +1,0 @@
-web: node heroku_apk_server/index.js
