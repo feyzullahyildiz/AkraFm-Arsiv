@@ -52,6 +52,11 @@ object RequestManager {
                 activity.runOnUiThread {
                     listener.error(Exception(error.message))
                 }
+            }finally {
+                val current = Thread.currentThread()
+                if(!current.isInterrupted) {
+                    current.interrupt()
+                }
             }
 
         }.start()
@@ -87,6 +92,11 @@ object RequestManager {
             } catch (error: Exception) {
                 activity.runOnUiThread {
                     listener.error(error)
+                }
+            } finally {
+                val current = Thread.currentThread()
+                if(!current.isInterrupted) {
+                    current.interrupt()
                 }
             }
 

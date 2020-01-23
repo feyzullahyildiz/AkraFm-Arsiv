@@ -2,7 +2,6 @@ package com.feyzullahefendi.akraarsiv
 
 import android.app.*
 import android.content.*
-import android.net.Uri
 import android.os.Build
 import com.google.android.exoplayer2.ExoPlayerFactory
 import com.google.android.exoplayer2.SimpleExoPlayer
@@ -23,6 +22,8 @@ import java.util.stream.Stream
 import com.google.android.exoplayer2.util.NotificationUtil.createNotificationChannel
 import android.app.NotificationManager
 import android.app.NotificationChannel
+import android.net.*
+import com.google.android.exoplayer2.source.hls.HlsMediaSource
 
 
 class PlayService : Service() {
@@ -33,7 +34,8 @@ class PlayService : Service() {
         const val BACKWARD = 3
         const val SEEK_TO = 4
         const val NOTIFY = 5
-        const val OPEN_APP= 6
+        const val OPEN_APP = 6
+        const val STOP = 7
         const val NOTIFICATION_ID = 27
         const val CHANNEL_ID = "FEYZ_CHANNEL_27"
         private var exoPlayer: SimpleExoPlayer? = null
@@ -56,6 +58,7 @@ class PlayService : Service() {
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, IntentFilter(INTENT_FILTER_NAME))
         seekBarTimer = Timer()
         handler = Handler()
+
 
     }
 
@@ -115,6 +118,12 @@ class PlayService : Service() {
                         stopForeground(true)
                     }
                 }
+                STOP -> {
+                    exoPlayer!!.playWhenReady = false
+                    stopTimer()
+                    sendStatus(MediaPlayerFragment.PLAY_STATE_CHANGE, MediaPlayerFragment.VALUE_PAUSED)
+                    stopForeground(true)
+                }
                 BACKWARD -> {
                     val duration = exoPlayer!!.currentPosition
                     if (duration > 5000) {
@@ -153,17 +162,29 @@ class PlayService : Service() {
                     if (model != null && streamModel.guid == model?.guid) {
                         return
                     }
-                    updateNotification(streamModel)
+                    model = streamModel
                     val dataSourceFactory =
                         DefaultHttpDataSourceFactory(Util.getUserAgent(this@PlayService, "akra-arsiv"))
                     val uri: Uri = Uri.parse(streamModel.sourceUrl())
-                    val mediaSource = SsMediaSource.Factory(dataSourceFactory).createMediaSource(uri)
+                    if (model!!.isMp4()) {
+                        updateNotification(streamModel)
+                        val mediaSource = SsMediaSource.Factory(dataSourceFactory).createMediaSource(uri)
 
-                    exoPlayer!!.playWhenReady = true
-                    sendStatus(MediaPlayerFragment.PLAY_STATE_CHANGE, MediaPlayerFragment.VALUE_STARTED)
-                    startTimer()
-                    exoPlayer!!.prepare(mediaSource, true, true)
-                    model = streamModel
+                        exoPlayer!!.playWhenReady = true
+                        sendStatus(MediaPlayerFragment.PLAY_STATE_CHANGE, MediaPlayerFragment.VALUE_STARTED)
+                        startTimer()
+                        exoPlayer!!.stop(true)
+                        exoPlayer!!.prepare(mediaSource, true, true)
+                    } else {
+                        val mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(uri)
+                        exoPlayer!!.playWhenReady = true
+                        sendStatus(MediaPlayerFragment.PLAY_STATE_CHANGE, MediaPlayerFragment.VALUE_STARTED)
+                        startTimer()
+                        exoPlayer!!.stop(true)
+                        exoPlayer!!.prepare(mediaSource, true, true)
+
+                    }
+
                 }
                 else -> {
                     Log.i(Utils.TAG, "onReceive $intentValue")
@@ -180,11 +201,21 @@ class PlayService : Service() {
             exoPlayer = ExoPlayerFactory.newSimpleInstance(this@PlayService)
             exoPlayer!!.addListener(object : Player.EventListener {
                 override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-                    Log.i(Utils.TAG, "onPlayerStateChanged $playWhenReady  $playbackState")
+//                    Log.i(Utils.TAG, "onPlayerStateChanged $playWhenReady  $playbackState")
                     if (playbackState == ExoPlayer.STATE_READY) {
+                        Log.i(Utils.TAG, "onPlayerStateChanged $playWhenReady STATE_READY")
                         val realDurationMillis = exoPlayer!!.duration
                         sendStatus(MediaPlayerFragment.TIME_SET, realDurationMillis)
+                    } else if (playbackState == ExoPlayer.STATE_IDLE) {
+                        Log.i(Utils.TAG, "onPlayerStateChanged $playWhenReady STATE_IDLE")
+                    } else if (playbackState == ExoPlayer.STATE_BUFFERING) {
+                        Log.i(Utils.TAG, "onPlayerStateChanged $playWhenReady STATE_BUFFERING")
+                    } else if (playbackState == ExoPlayer.STATE_ENDED) {
+                        Log.i(Utils.TAG, "onPlayerStateChanged $playWhenReady STATE_ENDED")
                     }
+                    val cm = this@PlayService.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                    cm.activeNetwork
+//                    Log.i(Utils.TAG, "onPlayerStateChanged isConnected: $isConnected")
                 }
             })
         }
