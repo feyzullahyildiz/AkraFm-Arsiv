@@ -1,0 +1,6 @@
+
+v2
+Telefon çaldığında radyo otomatik duruyor.
+
+v2.1
+Radyo için Bildirim gözükmeme hatası giderildi

@@ -36,6 +36,8 @@ class NotificationBroadCastReceiver : BroadcastReceiver() {
             }
 
 
+        } else {
+          Log.i("HOPPALA", "HOPPA")
         }
     }
 

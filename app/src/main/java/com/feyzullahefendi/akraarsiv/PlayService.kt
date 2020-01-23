@@ -176,6 +176,7 @@ class PlayService : Service() {
                         exoPlayer!!.stop(true)
                         exoPlayer!!.prepare(mediaSource, true, true)
                     } else {
+                        updateNotification(streamModel)
                         val mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(uri)
                         exoPlayer!!.playWhenReady = true
                         sendStatus(MediaPlayerFragment.PLAY_STATE_CHANGE, MediaPlayerFragment.VALUE_STARTED)
