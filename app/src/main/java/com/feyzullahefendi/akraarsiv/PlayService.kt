@@ -17,11 +17,9 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.exoplayer2.ExoPlayer
 import java.util.*
 import android.app.PendingIntent
-import android.graphics.BitmapFactory
-import java.util.stream.Stream
-import com.google.android.exoplayer2.util.NotificationUtil.createNotificationChannel
 import android.app.NotificationManager
 import android.app.NotificationChannel
+import android.graphics.Color
 import android.net.*
 import com.google.android.exoplayer2.source.hls.HlsMediaSource
 
@@ -37,7 +35,7 @@ class PlayService : Service() {
         const val OPEN_APP = 6
         const val STOP = 7
         const val NOTIFICATION_ID = 27
-        const val CHANNEL_ID = "FEYZ_CHANNEL_27"
+        const val CHANNEL_ID = "default"
         private var exoPlayer: SimpleExoPlayer? = null
 
         var seekBarTimer: Timer? = null
@@ -51,7 +49,6 @@ class PlayService : Service() {
     }
 
     var model: StreamModel? = null
-    var notificationBuilder: NotificationCompat.Builder? = null
     override fun onCreate() {
         super.onCreate()
         Log.i(Utils.TAG, "PlayService onCreate")
@@ -214,8 +211,8 @@ class PlayService : Service() {
                     } else if (playbackState == ExoPlayer.STATE_ENDED) {
                         Log.i(Utils.TAG, "onPlayerStateChanged $playWhenReady STATE_ENDED")
                     }
-                    val cm = this@PlayService.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-                    cm.activeNetwork
+//                    val cm = this@PlayService.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+//                    cm.activeNetwork
 //                    Log.i(Utils.TAG, "onPlayerStateChanged isConnected: $isConnected")
                 }
             })
@@ -229,14 +226,20 @@ class PlayService : Service() {
         }
         val openAppPendingIntent = PendingIntent.getBroadcast(this, 10, openAppIntent, 0)
 
-        notificationBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
-        notificationBuilder!!
-            .setAutoCancel(false)
-            .setOnlyAlertOnce(true)
-            .setSmallIcon(R.drawable.exo_notification_small_icon)
-            .setContentTitle(streamModel?.name)
-            .setContentText(streamModel?.date)
-            .setContentIntent(openAppPendingIntent)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Log.i(Utils.TAG, "API 26 ve sonrası GIRDI")
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Playback Notification",
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            channel.description = "Description"
+            channel.canShowBadge()
+            channel.setShowBadge(true)
+            channel.lightColor = Color.CYAN
+
+            notificationService.createNotificationChannel(channel)
+        }
 
         val stopIntent = Intent(NotificationBroadCastReceiver.DEFAULT).apply {
             putExtra("state", PlayService.PLAY)
@@ -247,19 +250,17 @@ class PlayService : Service() {
             "Durdur",
             stopPendingIntent
         ).build()
-        notificationBuilder!!.addAction(stopAction)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            /* Create or update. */
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Playback Notification",
-                NotificationManager.IMPORTANCE_HIGH
-            )
-            notificationService.createNotificationChannel(channel)
-            notificationBuilder!!.setChannelId(CHANNEL_ID)
-        }
-        val notification = notificationBuilder!!.build()
+
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setAutoCancel(false)
+            .setOnlyAlertOnce(true)
+            .setSmallIcon(R.drawable.exo_notification_small_icon)
+            .setContentTitle(streamModel?.name)
+            .setContentText(streamModel?.date)
+            .setContentIntent(openAppPendingIntent)
+            .addAction(stopAction)
+            .build()
         notificationService.notify(NOTIFICATION_ID, notification)
         startForeground(NOTIFICATION_ID, notification)
     }
