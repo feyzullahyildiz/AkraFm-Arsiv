@@ -34,6 +34,7 @@ class PlayService : Service() {
         const val NOTIFY = 5
         const val OPEN_APP = 6
         const val STOP = 7
+        const val PAUSE = 8
         const val NOTIFICATION_ID = 27
         const val CHANNEL_ID = "default"
         private var exoPlayer: SimpleExoPlayer? = null
@@ -220,28 +221,34 @@ class PlayService : Service() {
     }
 
     fun updateNotification(streamModel: StreamModel?) {
-        val notificationService = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val openAppIntent = Intent(NotificationBroadCastReceiver.DEFAULT).apply {
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val openAppIntent = Intent(this, MainActivity::class.java).apply {
             putExtra("state", OPEN_APP)
         }
-        val openAppPendingIntent = PendingIntent.getBroadcast(this, 10, openAppIntent, 0)
-
+        val openAppPendingIntent = PendingIntent.getActivity(
+            this, 10, openAppIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        var  notification: NotificationCompat.Builder
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Log.i(Utils.TAG, "API 26 ve sonrası GIRDI")
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Playback Notification",
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            channel.description = "Description"
-            channel.canShowBadge()
-            channel.setShowBadge(true)
-            channel.lightColor = Color.CYAN
+            var channel = notificationManager.getNotificationChannel(CHANNEL_ID)
+            if (channel == null) {
+                channel = NotificationChannel(
+                    CHANNEL_ID,
+                    "Playback Notification",
+                    NotificationManager.IMPORTANCE_HIGH
+                )
+                channel.description = "Description"
+                notificationManager.createNotificationChannel(channel)
+            }
 
-            notificationService.createNotificationChannel(channel)
+            notification = NotificationCompat.Builder(this, CHANNEL_ID)
+
+
+        } else {
+            notification = NotificationCompat.Builder(this)
         }
-
-        val stopIntent = Intent(NotificationBroadCastReceiver.DEFAULT).apply {
+        val stopIntent = Intent(this, NotificationBroadCastReceiver::class.java).apply {
             putExtra("state", PlayService.PLAY)
         }
         val stopPendingIntent = PendingIntent.getBroadcast(this, 11, stopIntent, 0)
@@ -251,18 +258,16 @@ class PlayService : Service() {
             stopPendingIntent
         ).build()
 
-
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+        val buildedNotication = notification
             .setAutoCancel(false)
-            .setOnlyAlertOnce(true)
             .setSmallIcon(R.drawable.exo_notification_small_icon)
             .setContentTitle(streamModel?.name)
             .setContentText(streamModel?.date)
             .setContentIntent(openAppPendingIntent)
             .addAction(stopAction)
             .build()
-        notificationService.notify(NOTIFICATION_ID, notification)
-        startForeground(NOTIFICATION_ID, notification)
+
+        startForeground(NOTIFICATION_ID, buildedNotication)
     }
 
     fun sendStatus(statusCode: Int, payload: Long) {
